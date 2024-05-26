@@ -2,7 +2,7 @@
     <div class="list">
         <div class="head">{{ props.name }}</div>
         <ul>
-            <Task v-for="(task, t) in props.tasks" :name="task.name" :id="task.id" :listId="props.id"/>
+            <Task v-for="(task, t) in props.tasks" :name="task.name" :id="task.id" :listId="props.id" :importance="task.importance  "/>
             <textarea v-if="addingTask" v-model="newTaskName"></textarea>
         </ul>
         <div class="hoverable" @click="addingTask = true" v-if="!addingTask">

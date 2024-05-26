@@ -8,8 +8,8 @@ let boards = {
                 id: 2300546879,
                 task: {
                     3763608745: { id: 3763608745, name: "Rocket 1" },
-                    1485447583: { id: 1485447583, name: "Rocket 2" },
-                    2706443008: { id: 2706443008, name: "Dying scream" }
+                    1485447583: { id: 1485447583, name: "Rocket 2", importance: 1 },
+                    2706443008: { id: 2706443008, name: "Dying scream", importance: 0 }
                 }
             },
             6530230279: {

@@ -1,11 +1,13 @@
 <template>
     <text class="task" v-if="!editing" @click="editing = true">
+        <div class="importance" :class="{ green: props.importance == 0, yellow: props.importance == 1, red: props.importance == 2 }" v-if="importance != null"></div>
         {{ props.name }}
         <i class="fa-solid fa-pen" @click="editedTask = props.name"></i>
     </text>
     <textarea v-if="editing" v-model="editedTask"></textarea>
     <section class="add" v-if="editing">
-        <div class="send" @click="dataStore.updateTask(props.listId, props.id, editedTask), editing = false">Add card</div>
+        <div class="send" @click="dataStore.updateTask(props.listId, props.id, editedTask), editing = false">Add card
+        </div>
         <i class="fa-solid fa-xmark cancel" @click="editing = false"></i>
     </section>
 </template>
@@ -17,7 +19,8 @@ import { useDataStore } from '@/stores/dataStore';
 const props = defineProps({
     name: String,
     id: Number,
-    listId: Number
+    listId: Number,
+    importance: Number
 });
 
 const editing = ref(false);
@@ -36,6 +39,25 @@ const dataStore = useDataStore();
     border-radius: 0.5rem;
     overflow-wrap: break-all;
     position: relative;
+    gap: 0.5rem;
+
+    >.importance {
+        height: 0.5rem;
+        aspect-ratio: 1;
+        border-radius: 50%;
+
+        &.green {
+            background-color: green;
+        }
+
+        &.yellow {
+            background-color: yellow;
+        }
+
+        &.red {
+            background-color: red;
+        }
+    }
 
     >i {
         display: none;
