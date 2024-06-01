@@ -3,18 +3,22 @@
         <h1>Trello</h1>
         <p>Project for DVOP <br> Github: <a href="https://github.com/NewSulc">NewSulc</a></p>
         <div>
-            <button>Login</button>
+            <button @click="pushToSite('login')">Login</button>
             <p>or</p>
-            <button>Sign-up</button>
+            <button @click="pushToSite('signup')">Sign-up</button>
         </div>
     </div>
 </template>
 
 <script setup>
+import { useRouter } from 'vue-router';
+const router = useRouter();
+
+function pushToSite(val) { router.push(val); }
 </script>
 
 <style scoped lang="scss">
-.wrap{
+.wrap {
     width: 100%;
     height: 100%;
     background-color: rgb(25, 25, 25);
@@ -25,27 +29,27 @@
     gap: 2rem;
     flex-direction: column;
 
-    h1{
+    h1 {
         font-size: 5rem;
         font-weight: 700;
     }
 
-    p{
+    p {
         font-size: 1.5rem;
         font-weight: 300;
         line-height: 2rem;
     }
 
-    a{
+    a {
         color: white;
     }
 
-    >div{
+    >div {
         display: flex;
         align-items: center;
         gap: 1rem;
 
-        >button{
+        >button {
             width: 8rem;
             height: 3rem;
             font-size: 1.5rem;
@@ -58,13 +62,13 @@
             font-weight: 700;
             transition: 0.25s;
 
-            &:hover{
+            &:hover {
                 transform: scale(0.95);
                 transition: 0.25s;
             }
         }
 
-        p{
+        p {
             font-weight: 100;
         }
     }

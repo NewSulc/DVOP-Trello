@@ -3,14 +3,38 @@
         <div class="background">
             <h1>Login</h1>
             <hr>
-            <input type="text" placeholder="User name">
-            <input type="Password" placeholder="Password">
-            <button>Log me in</button>
+            <input type="text" v-model="username" placeholder="User name">
+            <input type="Password" v-model="password" placeholder="Password">
+            <button @click="login()">Log me in</button>
         </div>
     </div>
 </template>
 
 <script setup>
+import { ref } from 'vue';
+const username = ref();
+const password = ref();
+
+function login() {
+    fetch(`http://localhost:8080/user/login`, {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            username: username.value,
+            password: password.value
+        })
+    }).then(async (res) => {
+        const response = await res.text();
+        if (res.status != 201) error.value = response;
+    }).catch(error => {
+        console.error('Error fetching resource:', error);
+    });
+}
 </script>
 
 <style scoped lang="scss">

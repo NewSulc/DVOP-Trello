@@ -3,16 +3,69 @@
         <div class="background">
             <h1>Sign up</h1>
             <hr>
-            <input type="text" placeholder="User name">
-            <input type="email" placeholder="E-mail">
-            <input type="Password" placeholder="Password">
-            <input type="Password" placeholder="Confirm password">
-            <button>Sign me up</button>
+            <input type="text" v-model="username" placeholder="User Name">
+            <input type="Password" v-model="password" placeholder="Password">
+            <input type="Password" v-model="passwordConfirm" placeholder="Confirm password">
+            <button @click="signUp()">Sign me up</button>
+            <p class="error">{{ error }}</p>
         </div>
     </div>
 </template>
 
 <script setup>
+import { ref } from 'vue';
+const username = ref();
+const password = ref();
+const passwordConfirm = ref();
+const error = ref();
+
+function signUp() {
+    error.value = "";
+    const newUsername = username.value;
+    const newPassword = password.value;
+    if (password.value != passwordConfirm.value) {
+        error.value = "The passwords don't match."
+    }
+    else {
+        fetch(`http://localhost:8080/user`, {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                username: username.value,
+                password: password.value
+            })
+        }).then(async (res) => {
+            const response = await res.text();
+            if (res.status != 201) error.value = response;
+            else {
+                fetch(`http://localhost:8080/user/login`, {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: newUsername,
+                        password: newPassword
+                    })
+                }).then(async (res) => {
+                    console.log(res)
+                }).catch(error => {
+                    console.error('Error fetching resource:', error);
+                });
+            }
+        }).catch(error => {
+            console.error('Error fetching resource:', error);
+        });
+    }
+    username.value = "";
+    password.value = "";
+    passwordConfirm.value = "";
+}
 </script>
 
 <style scoped lang="scss">
@@ -72,5 +125,9 @@
             }
         }
     }
+}
+
+.error {
+    color: red;
 }
 </style>

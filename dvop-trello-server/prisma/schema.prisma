@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Board {
+  id          Int     @id @default(autoincrement())
+  name        String
+  description String
+  project_id  Int
+  Project     Project @relation(fields: [project_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  List        List[]
+}
+
+model List {
+  id       Int    @id @default(autoincrement())
+  name     String
+  board_id Int
+  Board    Board  @relation(fields: [board_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Task     Task[]
+}
+
+model Project {
+  id           Int            @id @default(autoincrement())
+  name         String
+  description  String
+  Board        Board[]
+  User_Project User_Project[]
+}
+
+model Task {
+  id      Int    @id @default(autoincrement())
+  name    String
+  list_id Int
+  List    List   @relation(fields: [list_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model User {
+  id           Int            @id @default(autoincrement())
+  username     String
+  password     String
+  User_Project User_Project[]
+}
+
+model User_Project {
+  id         Int     @id @default(autoincrement())
+  user_id    Int
+  project_id Int
+  Project    Project @relation(fields: [project_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  User       User    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
