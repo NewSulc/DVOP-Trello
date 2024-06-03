@@ -2,7 +2,7 @@
     <div class="list">
         <div class="head">{{ props.name }}</div>
         <ul>
-            <Task v-for="(task, t) in props.tasks" :name="task.name" :id="task.id" :listId="props.id" :importance="task.importance  "/>
+            <Task v-for="(task, t) in tasks" :name="task.name" :id="task.id" :listId="props.id" />
             <textarea v-if="addingTask" v-model="newTaskName"></textarea>
         </ul>
         <div class="hoverable" @click="addingTask = true" v-if="!addingTask">
@@ -10,7 +10,7 @@
             Add card
         </div>
         <section class="add" v-if="addingTask">
-            <div class="send" @click="dataStore.createTask(props.id, newTaskName), addingTask=false, newTaskName = ''">Add card</div>
+            <div class="send" @click="postTask()">Add card</div>
             <i class="fa-solid fa-xmark cancel" @click="addingTask = false"></i>
         </section>
     </div>
@@ -18,18 +18,57 @@
 
 <script setup>
 import { ref } from 'vue';
+import { onMounted } from 'vue';
 import { useDataStore } from '@/stores/dataStore';
 import Task from '@/components/board/Task.vue';
 
+const tasks = ref();
+
 const props = defineProps({
     name: String,
-    tasks: Object,
     id: Number
 });
 
-const dataStore = useDataStore();
 const addingTask = ref(false);
 const newTaskName = ref("");
+
+onMounted(() => {
+    getTasks();
+})
+
+function getTasks() {
+    fetch(`http://localhost:8080/list/${props.id}`, {
+        method: "GET",
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        }
+    }).then(async (res) => {
+        tasks.value = await res.json()
+    }).catch(error => {
+        console.error('Error fetching resource:', error);
+    });
+}
+
+function postTask() {
+    fetch(`http://localhost:8080/list/${props.id}/task`, {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        },
+        body: JSON.stringify({
+            name: newTaskName.value
+        })
+    }).then(async (res) => {
+        getTasks();
+        addingTask.value = false;
+        newTaskName.value = ""
+
+    }).catch(error => {
+        console.error('Error fetching resource:', error);
+    });
+}
 </script>
 
 <style scoped lang="scss">

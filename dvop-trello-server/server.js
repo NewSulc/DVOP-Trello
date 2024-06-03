@@ -92,18 +92,12 @@ app.post("/project", authenticateToken, async (req, res) => {
     }
 });
 
-app.post("/project/:projectid", authenticateToken, async (req, res) => {
+app.post("/project/:projectid/board", authenticateToken, async (req, res) => {
     try {
-        const userProjectExist = await prisma.user_Project.findFirst({
-            where: {
-                user_id: req.user.id,
-                project_id: Number(req.params.projectid)
-            },
-        });
-        if (userProjectExist) res.status(409).send()
-        await prisma.user_Project.create({
+        await prisma.board.create({
             data: {
-                user_id: req.user.id,
+                name: req.body.name,
+                description: req.body.description,
                 project_id: Number(req.params.projectid)
             }
         });
@@ -111,23 +105,62 @@ app.post("/project/:projectid", authenticateToken, async (req, res) => {
     } catch {
         res.status(500).send()
     }
-})
+});
 
 app.get("/project/:projectid", authenticateToken, async (req, res) => {
-    const boards = await prisma.board.findMany({
-        where: {
-            project_id: Number(req.params.projectid)
-        }
-    })
+    try {
+        const boards = await prisma.board.findMany({
+            where: {
+                project_id: Number(req.params.projectid)
+            }
+        })
 
-    res.send(boards)
-})
+        res.send(boards)
+    } catch {
+        res.status(500).send()
+    }
+});
 
-app.get("/board/:boardid", (req, res) => {
-    if (boards[req.params.boardid] != null) res.send(boards[req.params.boardid]);
-    else {
-        res.status(404)
-        res.send("Board not found")
+app.get("/board/:boardid", authenticateToken, async (req, res) => {
+    try {
+        const lists = await prisma.list.findMany({
+            where: {
+                board_id: Number(req.params.boardid)
+            }
+        })
+    
+        res.send(lists)
+    } catch {
+        res.status(500).send()
+    }
+});
+
+app.get("/list/:listId", authenticateToken, async (req, res) => {
+    try {
+        const lists = await prisma.task.findMany({
+            where: {
+                list_id: Number(req.params.listId)
+            }
+        })
+    
+        res.send(lists)
+    } catch {
+        res.status(500).send()
+    }
+});
+
+app.post("/list/:listId/task", authenticateToken, async (req, res) => {
+    try {
+        const lists = await prisma.task.create({
+            data: {
+                name: req.body.name,
+                list_id: Number(req.params.listId)
+            }
+        });
+    
+        res.send(lists)
+    } catch {
+        res.status(500).send()
     }
 });
 

@@ -1,13 +1,15 @@
 <template>
     <article>
         <div class="wrap">
-            <TaskList v-for="(list, l) in dataStore.currentBoard.list" :name="list.name" :id="list.id" :tasks="list.task" />
+            <TaskList v-for="(list, l) in lists" :name="list.name" :id="list.id"
+                :tasks="list.task" />
         </div>
     </article>
 </template>
 
 <script setup>
 import { useDataStore } from '@/stores/dataStore';
+import { ref } from 'vue';
 import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import TaskList from '../components/board/TaskList.vue';
@@ -15,8 +17,20 @@ import TaskList from '../components/board/TaskList.vue';
 const dataStore = useDataStore();
 const router = useRouter();
 
+const lists = ref();
+
 onMounted(() => {
-    dataStore.getCurrentBoard(router.currentRoute.value.params.boardId);
+    fetch(`http://localhost:8080/board/${router.currentRoute.value.params.boardId}`, {
+        method: "GET",
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        }
+    }).then(async (res) => {
+        lists.value = await res.json()
+    }).catch(error => {
+        console.error('Error fetching resource:', error);
+    });
 });
 </script>
 
@@ -29,7 +43,7 @@ article {
     justify-content: center;
     align-items: center;
 
-    >.wrap{
+    >.wrap {
         width: 95%;
         max-width: 95%;
         height: 95%;

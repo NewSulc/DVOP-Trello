@@ -1,6 +1,5 @@
 <template>
     <text class="task" v-if="!editing" @click="editing = true">
-        <div class="importance" :class="{ green: props.importance == 0, yellow: props.importance == 1, red: props.importance == 2 }" v-if="importance != null"></div>
         {{ props.name }}
         <i class="fa-solid fa-pen" @click="editedTask = props.name"></i>
     </text>
@@ -19,8 +18,7 @@ import { useDataStore } from '@/stores/dataStore';
 const props = defineProps({
     name: String,
     id: Number,
-    listId: Number,
-    importance: Number
+    listId: Number
 });
 
 const editing = ref(false);

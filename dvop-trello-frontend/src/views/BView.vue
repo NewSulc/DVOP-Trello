@@ -2,7 +2,7 @@
     <div class="header"></div>
     <article>
         <div class="wrap">
-            <Card v-for="(card, c) in cards" :name="card.name" :id="card.id" @click="routerPush(`/p/${card.id}`)"/>
+            <Card v-for="(card, c) in cards" :name="card.name" :id="card.id" @click="routerPush(`/b/${card.id}`)"></Card>
             <div @click="formOpen()" class="add"><i class="fa-solid fa-plus"></i></div>
         </div>
     </article>
@@ -11,7 +11,7 @@
         <hr>
         <input v-model="newName" type="text" placeholder="Name">
         <input v-model="newDesc" type="text" placeholder="Description" class="description">
-        <button @click="newProject">Create project</button>
+        <button @click="newBoard()">Create board</button>
     </div>
 </template>
 
@@ -30,7 +30,7 @@ const cards = ref([])
 const formOn = ref(false);
 
 onMounted(() => {
-    getProjects();
+    getBoards();
 })
 
 function formOpen() { formOn.value = true }
@@ -38,12 +38,8 @@ function formOpen() { formOn.value = true }
 const newName = ref();
 const newDesc = ref("");
 
-function newProject() {
-    console.log({
-        name: newName.value,
-        description: newDesc.value
-    })
-    fetch(`http://localhost:8080/project`, {
+function newBoard() {
+    fetch(`http://localhost:8080/project/${router.currentRoute.value.params.projectId}/board`, {
         method: "POST",
         headers: {
             'Content-Type': 'application/json',
@@ -55,14 +51,14 @@ function newProject() {
         })
     }).then(async (res) => {
         formOn.value = false;
-        getProjects();
+        getBoards();
     }).catch(error => {
         console.error('Error fetching resource:', error);
     });
 }
 
-function getProjects() {
-    fetch(`http://localhost:8080/project`, {
+function getBoards() {
+    fetch(`http://localhost:8080/project/${router.currentRoute.value.params.projectId}`, {
         method: "GET",
         headers: {
             'Content-Type': 'application/json',
@@ -109,6 +105,7 @@ article {
             justify-content: center;
             align-items: center;
             transition: 0.25s;
+            border-radius: 1rem;
 
             &:active {
                 transform: scale(0.95);

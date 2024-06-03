@@ -14,6 +14,7 @@ const props = defineProps({
 .card{
     height: 7rem;
     aspect-ratio: 4/3;
+    border-radius: 1rem;
     background-color: white;
     display: flex;
     justify-content: center;
