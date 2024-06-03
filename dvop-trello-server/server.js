@@ -33,13 +33,31 @@ app.post("/user", async (req, res) => {
     }
 });
 
+app.patch("/user", authenticateToken, async (req, res) => {
+    const users = await prisma.user.findMany()
+    if (users.some(user => user.username === req.body.newUsername)) return res.status(409).send("A user with this username already exists")
+    try {
+        await prisma.user.update({
+            where: {
+                id: req.user.id,
+            },
+            data: {
+                username: req.body.newUsername,
+            },
+        });
+        res.status(201).send()
+    } catch {
+        res.status(500).send()
+    }
+});
+
 app.post("/user/login", async (req, res) => {
     try {
         const users = await prisma.user.findMany()
         const user = users.find(user => user.username === req.body.username)
         if (user == null) return res.status(400).send("A user with this username doesn't exist")
         if (!await bcrypt.compare(req.body.password, user.password)) res.status(401).send('Wrong password')
-        const accessToken = jwt.sign({ id: user.id, username: user.username }, process.env.ACCESS_TOKEN_SECRET)
+        const accessToken = jwt.sign({ id: user.id }, process.env.ACCESS_TOKEN_SECRET)
         res.status(200).send({ accessToken: accessToken })
     } catch {
         res.status(500).send()
@@ -73,6 +91,37 @@ app.post("/project", authenticateToken, async (req, res) => {
         res.status(500).send()
     }
 });
+
+app.post("/project/:projectid", authenticateToken, async (req, res) => {
+    try {
+        const userProjectExist = await prisma.user_Project.findFirst({
+            where: {
+                user_id: req.user.id,
+                project_id: Number(req.params.projectid)
+            },
+        });
+        if (userProjectExist) res.status(409).send()
+        await prisma.user_Project.create({
+            data: {
+                user_id: req.user.id,
+                project_id: Number(req.params.projectid)
+            }
+        });
+        res.status(200).send()
+    } catch {
+        res.status(500).send()
+    }
+})
+
+app.get("/project/:projectid", authenticateToken, async (req, res) => {
+    const boards = await prisma.board.findMany({
+        where: {
+            project_id: Number(req.params.projectid)
+        }
+    })
+
+    res.send(boards)
+})
 
 app.get("/board/:boardid", (req, res) => {
     if (boards[req.params.boardid] != null) res.send(boards[req.params.boardid]);

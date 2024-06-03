@@ -6,6 +6,7 @@
             <input type="text" v-model="username" placeholder="User name">
             <input type="Password" v-model="password" placeholder="Password">
             <button @click="login()">Log me in</button>
+            <p class="error">{{ error }}</p>
         </div>
     </div>
 </template>
@@ -14,13 +15,14 @@
 import { ref } from 'vue';
 const username = ref();
 const password = ref();
+const error = ref();
+
+import { useRouter } from 'vue-router';
+const router = useRouter();
 
 function login() {
     fetch(`http://localhost:8080/user/login`, {
         method: "POST",
-        headers: {
-            'Content-Type': 'application/json'
-        },
         headers: {
             'Content-Type': 'application/json'
         },
@@ -29,8 +31,15 @@ function login() {
             password: password.value
         })
     }).then(async (res) => {
-        const response = await res.text();
-        if (res.status != 201) error.value = response;
+        if (res.status == 200) {
+            const response = await res.json();
+                    localStorage.setItem('accessToken', response.accessToken);
+            router.push("/projects")
+        }
+        else {
+            error.value = await res.text();
+        }
+
     }).catch(error => {
         console.error('Error fetching resource:', error);
     });
@@ -94,5 +103,9 @@ function login() {
             }
         }
     }
+}
+
+.error {
+    color: red;
 }
 </style>

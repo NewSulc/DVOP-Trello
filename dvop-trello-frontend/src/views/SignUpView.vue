@@ -19,6 +19,9 @@ const password = ref();
 const passwordConfirm = ref();
 const error = ref();
 
+import { useRouter } from 'vue-router';
+const router = useRouter();
+
 function signUp() {
     error.value = "";
     const newUsername = username.value;
@@ -45,15 +48,14 @@ function signUp() {
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
                     body: JSON.stringify({
                         username: newUsername,
                         password: newPassword
                     })
                 }).then(async (res) => {
-                    console.log(res)
+                    const response = await res.json();
+                    localStorage.setItem('accessToken', response.accessToken);
+                    router.push("/projects")
                 }).catch(error => {
                     console.error('Error fetching resource:', error);
                 });

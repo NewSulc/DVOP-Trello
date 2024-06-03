@@ -3,27 +3,72 @@
     <article>
         <div class="wrap">
             <Card v-for="(karta, c) in cards" :name="karta.name" :id="karta.id" />
-            <div class="add"><i class="fa-solid fa-plus"></i></div>
+            <div @click="formOpen()" class="add"><i class="fa-solid fa-plus"></i></div>
         </div>
     </article>
     <div class="form" v-if="formOn">
         <h2>New Project</h2>
         <hr>
-        <input type="text" placeholder="Name">
-        <input type="text" placeholder="Description" class="description">
-        <button>Create project</button>
+        <input v-model="newName" type="text" placeholder="Name">
+        <input v-model="newDesc" type="text" placeholder="Description" class="description">
+        <button @click="newProject">Create project</button>
     </div>
 </template>
 
 <script setup>
 import { ref } from 'vue';
+import { onMounted } from 'vue'
 import Card from '../components/Card.vue';
 
-const cards = ref([
-    { name: "Projekt 1", id: 854554 }
-])
+const cards = ref([])
 
-const formOn = ref(true);
+const formOn = ref(false);
+
+onMounted(() => {
+    getProjects();
+})
+
+function formOpen() { formOn.value = true }
+
+const newName = ref();
+const newDesc = ref("");
+
+function newProject() {
+    console.log({
+        name: newName.value,
+        description: newDesc.value
+    })
+    fetch(`http://localhost:8080/project`, {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        },
+        body: JSON.stringify({
+            name: newName.value,
+            description: newDesc.value
+        })
+    }).then(async (res) => {
+        formOn.value = false;
+        getProjects();
+    }).catch(error => {
+        console.error('Error fetching resource:', error);
+    });
+}
+
+function getProjects() {
+    fetch(`http://localhost:8080/project`, {
+        method: "GET",
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        }
+    }).then(async (res) => {
+        cards.value = await res.json()
+    }).catch(error => {
+        console.error('Error fetching resource:', error);
+    });
+}
 </script>
 
 <style scoped lang="scss">
