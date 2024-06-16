@@ -1,14 +1,13 @@
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
-import bcrypt from "bcrypt";
-import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
 import prisma from './prismaClient.js';
 
 import { boards } from './data.js';
 
-dotenv.config()
+import userRoutes from './routes/User.js';
+
+import { authenticateToken } from './token.js'
 
 const app = express();
 
@@ -18,51 +17,7 @@ app.use(cors({
     origin: "*"
 }));
 
-app.post("/user", async (req, res) => {
-    const users = await prisma.user.findMany()
-    if (users.some(user => user.username === req.body.username)) return res.status(409).send("A user with this username already exists")
-    try {
-        const hashedPassword = await bcrypt.hash(req.body.password, 10);
-
-        const newUser = { username: req.body.username, password: hashedPassword };
-
-        await prisma.user.create({ data: newUser });
-        res.status(201).send()
-    } catch {
-        res.status(500).send()
-    }
-});
-
-app.patch("/user", authenticateToken, async (req, res) => {
-    const users = await prisma.user.findMany()
-    if (users.some(user => user.username === req.body.newUsername)) return res.status(409).send("A user with this username already exists")
-    try {
-        await prisma.user.update({
-            where: {
-                id: req.user.id,
-            },
-            data: {
-                username: req.body.newUsername,
-            },
-        });
-        res.status(201).send()
-    } catch {
-        res.status(500).send()
-    }
-});
-
-app.post("/user/login", async (req, res) => {
-    try {
-        const users = await prisma.user.findMany()
-        const user = users.find(user => user.username === req.body.username)
-        if (user == null) return res.status(400).send("A user with this username doesn't exist")
-        if (!await bcrypt.compare(req.body.password, user.password)) res.status(401).send('Wrong password')
-        const accessToken = jwt.sign({ id: user.id }, process.env.ACCESS_TOKEN_SECRET)
-        res.status(200).send({ accessToken: accessToken })
-    } catch {
-        res.status(500).send()
-    }
-});
+app.use("/user", userRoutes)
 
 app.get("/project", authenticateToken, async (req, res) => {
     const userProjects = await prisma.user_Project.findMany({
@@ -128,7 +83,7 @@ app.get("/board/:boardid", authenticateToken, async (req, res) => {
                 board_id: Number(req.params.boardid)
             }
         })
-    
+
         res.send(lists)
     } catch {
         res.status(500).send()
@@ -142,7 +97,7 @@ app.get("/list/:listId", authenticateToken, async (req, res) => {
                 list_id: Number(req.params.listId)
             }
         })
-    
+
         res.send(lists)
     } catch {
         res.status(500).send()
@@ -157,7 +112,7 @@ app.post("/list/:listId/task", authenticateToken, async (req, res) => {
                 list_id: Number(req.params.listId)
             }
         });
-    
+
         res.send(lists)
     } catch {
         res.status(500).send()
@@ -212,18 +167,6 @@ app.patch("/board/:boardid/list/:listid/task/:taskid", (req, res) => {
         res.send("Board not found")
     }
 });
-
-function authenticateToken(req, res, next) {
-    const authHeader = req.headers['authorization']
-    const token = authHeader && authHeader.split(' ')[1]
-    if (token == null) return res.sendStatus(401)
-
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
-        if (err) return res.sendStatus(403)
-        req.user = user
-        next()
-    })
-}
 
 app.listen(8080, () => {
     console.log("Listening on 8080");
