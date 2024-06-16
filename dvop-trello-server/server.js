@@ -6,6 +6,7 @@ import prisma from './prismaClient.js';
 import { boards } from './data.js';
 
 import userRoutes from './routes/User.js';
+import projectRoutes from './routes/Project.js';
 
 import { authenticateToken } from './token.js'
 
@@ -19,62 +20,7 @@ app.use(cors({
 
 app.use("/user", userRoutes)
 
-app.get("/project", authenticateToken, async (req, res) => {
-    const userProjects = await prisma.user_Project.findMany({
-        where: {
-            user_id: req.user.id,
-        },
-        include: {
-            Project: true,
-        },
-    });
-
-    res.send(userProjects.map(userProject => userProject.Project))
-});
-
-app.post("/project", authenticateToken, async (req, res) => {
-    try {
-        const newProject = await prisma.project.create({ data: req.body })
-        await prisma.user_Project.create({
-            data: {
-                user_id: req.user.id,
-                project_id: newProject.id
-            }
-        });
-        res.status(201).send()
-    } catch {
-        res.status(500).send()
-    }
-});
-
-app.post("/project/:projectid/board", authenticateToken, async (req, res) => {
-    try {
-        await prisma.board.create({
-            data: {
-                name: req.body.name,
-                description: req.body.description,
-                project_id: Number(req.params.projectid)
-            }
-        });
-        res.status(200).send()
-    } catch {
-        res.status(500).send()
-    }
-});
-
-app.get("/project/:projectid", authenticateToken, async (req, res) => {
-    try {
-        const boards = await prisma.board.findMany({
-            where: {
-                project_id: Number(req.params.projectid)
-            }
-        })
-
-        res.send(boards)
-    } catch {
-        res.status(500).send()
-    }
-});
+app.use("/project", projectRoutes)
 
 app.get("/board/:boardid", authenticateToken, async (req, res) => {
     try {
