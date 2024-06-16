@@ -26,7 +26,8 @@ router.patch("/:boardid", authenticateToken, async (req, res) => {
                 id: Number(req.params.boardid)
             },
             data: {
-                name: req.body.newName
+                name: req.body.name,
+                description: req.body.description
             }
         });
         res.status(200).send()

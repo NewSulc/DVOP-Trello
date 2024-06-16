@@ -5,11 +5,14 @@
     <article>
         <div class="wrap">
             <Card v-for="(card, c) in cards" :name="card.name" :id="card.id" @selectPro="routerPush(`/p/${card.id}`)"
-                @changePro="" @deletePro="deleteForm(card)" />
+                @changePro="changeForm(card)" @deletePro="deleteForm(card)" />
             <div @click="formOpen()" class="add"><i class="fa-solid fa-plus"></i></div>
         </div>
         <Delete :class="{ inactive: !deleting }" :name="selectedProject.name" @reject="deleting = false"
             @confirm="deleteProject()" />
+
+        <Change :class="{ inactive: !changing }" :name="selectedProject.name" :description="selectedProject.description" @reject="changing = false"
+            @confirm="changeProject" />
     </article>
     <div class="form" v-if="formOn">
         <h2>New Project</h2>
@@ -26,6 +29,7 @@ import { onMounted } from 'vue'
 import Card from '../components/Card.vue';
 import TopMenu from '../components/TopMenu.vue';
 import Delete from '../components/forms/Delete.vue';
+import Change from '../components/forms/Change.vue';
 
 import { useRouter } from 'vue-router';
 const router = useRouter();
@@ -83,8 +87,23 @@ function changeForm(card) {
     changing.value = true;
 }
 
-function changeProject() {
-
+const changeProject = (name, description) => {
+    fetch(`http://localhost:8080/project/${selectedProject.value.id}`, {
+        method: "PATCH",
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        },
+        body: JSON.stringify({
+            name: name,
+            description: description
+        })
+    }).then(async (res) => {
+        changing.value = false;
+        getProjects();
+    }).catch(error => {
+        console.error('Error fetching resource:', error);
+    });
 }
 
 function deleteForm(card) {
@@ -110,7 +129,7 @@ function deleteProject() {
 const deleting = ref(false);
 const changing = ref(false);
 
-const selectedProject = ref({ name: "" })
+const selectedProject = ref({ name: "", description: "" })
 </script>
 
 <style scoped lang="scss">

@@ -69,7 +69,8 @@ router.patch("/:projectid", authenticateToken, async (req, res) => {
                 id: Number(req.params.projectid)
             },
             data: {
-                name: req.body.newName
+                name: req.body.name,
+                description: req.body.description
             }
         });
         res.status(200).send()
