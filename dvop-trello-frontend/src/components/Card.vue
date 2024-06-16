@@ -1,6 +1,5 @@
 <template>
     <div class="wrap">
-        <i @click="infoPro()" class="fa-solid fa-circle-info"></i>
         <i @click="changePro()" class="fa-solid fa-pen"></i>
         <i @click="deletePro()" class="fa-solid fa-trash"></i>
         <div class="card" :style="{ backgroundColor: bgColor }" @click="selectPro()">
@@ -24,10 +23,9 @@ onMounted(() => {
     bgColor.value = '#' + Math.floor(Math.random() * 16777215).toString(16);
 });
 
-const emit = defineEmits(["selectPro", "infoPro", "changePro", "deletePro"])
+const emit = defineEmits(["selectPro", "changePro", "deletePro"])
 
 const selectPro = () => { emit("selectPro") }
-const infoPro = () => { emit("infoPro") }
 const changePro = () => { emit("changePro") }
 const deletePro = () => { emit("deletePro") }
 </script>
@@ -73,11 +71,6 @@ const deletePro = () => { emit("deletePro") }
         &:nth-child(2) {
             right: 5%;
             top: 5%;
-        }
-
-        &:nth-child(3) {
-            right: 5%;
-            bottom: 5%;
         }
 
         &:hover {

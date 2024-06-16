@@ -5,9 +5,11 @@
     <article>
         <div class="wrap">
             <Card v-for="(card, c) in cards" :name="card.name" :id="card.id" @selectPro="routerPush(`/p/${card.id}`)"
-                @infoPro="" @changePro="" @deletePro="" />
+                @changePro="" @deletePro="deleteForm(card)" />
             <div @click="formOpen()" class="add"><i class="fa-solid fa-plus"></i></div>
         </div>
+        <Delete :class="{ inactive: !deleting }" :name="selectedProject.name" @reject="deleting = false"
+            @confirm="deleteProject()" />
     </article>
     <div class="form" v-if="formOn">
         <h2>New Project</h2>
@@ -22,7 +24,8 @@
 import { ref } from 'vue';
 import { onMounted } from 'vue'
 import Card from '../components/Card.vue';
-import TopMenu from '../components/TopMenu.vue'
+import TopMenu from '../components/TopMenu.vue';
+import Delete from '../components/forms/Delete.vue';
 
 import { useRouter } from 'vue-router';
 const router = useRouter();
@@ -43,10 +46,6 @@ const newName = ref();
 const newDesc = ref("");
 
 function newProject() {
-    console.log({
-        name: newName.value,
-        description: newDesc.value
-    })
     fetch(`http://localhost:8080/project`, {
         method: "POST",
         headers: {
@@ -79,7 +78,39 @@ function getProjects() {
     });
 }
 
+function changeForm(card) {
+    selectedProject.value = card;
+    changing.value = true;
+}
 
+function changeProject() {
+
+}
+
+function deleteForm(card) {
+    selectedProject.value = card;
+    deleting.value = true;
+}
+
+function deleteProject() {
+    fetch(`http://localhost:8080/project/${selectedProject.value.id}`, {
+        method: "DELETE",
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        }
+    }).then(async (res) => {
+        deleting.value = false;
+        getProjects();
+    }).catch(error => {
+        console.error('Error fetching resource:', error);
+    });
+}
+
+const deleting = ref(false);
+const changing = ref(false);
+
+const selectedProject = ref({ name: "" })
 </script>
 
 <style scoped lang="scss">
@@ -162,5 +193,9 @@ article {
             transition: 0.25s;
         }
     }
+}
+
+.inactive {
+    display: none;
 }
 </style>

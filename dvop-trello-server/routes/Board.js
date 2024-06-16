@@ -19,6 +19,35 @@ router.get("/:boardid", authenticateToken, async (req, res) => {
     }
 });
 
+router.patch("/:boardid", authenticateToken, async (req, res) => {
+    try {
+        await prisma.board.update({
+            where: {
+                id: Number(req.params.boardid)
+            },
+            data: {
+                name: req.body.newName
+            }
+        });
+        res.status(200).send()
+    } catch{
+        res.status(500).send()
+    }
+});
+
+router.delete("/:boardid", authenticateToken, async (req, res) => {
+    try {
+        await prisma.board.delete({
+            where: {
+                id: Number(req.params.boardid)
+            }
+        });
+        res.status(200).send()
+    } catch {
+        res.status(500).send()
+    }
+});
+
 router.post("/:boardid/list/:listid/task", (req, res) => {
     if (boards[req.params.boardid] != null) {
         if (boards[req.params.boardid].list[req.params.listid] != null) {

@@ -62,4 +62,33 @@ router.get("/:projectid", authenticateToken, async (req, res) => {
     }
 });
 
+router.patch("/:projectid", authenticateToken, async (req, res) => {
+    try {
+        await prisma.project.update({
+            where: {
+                id: Number(req.params.projectid)
+            },
+            data: {
+                name: req.body.newName
+            }
+        });
+        res.status(200).send()
+    } catch {
+        res.status(500).send()
+    }
+});
+
+router.delete("/:projectid", authenticateToken, async (req, res) => {
+    try {
+        await prisma.project.delete({
+            where: {
+                id: Number(req.params.projectid)
+            }
+        });
+        res.status(200).send()
+    } catch {
+        res.status(500).send()
+    }
+});
+
 export default router;
