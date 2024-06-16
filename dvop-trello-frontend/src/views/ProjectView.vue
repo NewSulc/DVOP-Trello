@@ -1,8 +1,11 @@
 <template>
-    <div class="header"></div>
+    <div class="header">
+        <TopMenu />
+    </div>
     <article>
         <div class="wrap">
-            <Card v-for="(card, c) in cards" :name="card.name" :id="card.id" @click="routerPush(`/p/${card.id}`)"/>
+            <Card v-for="(card, c) in cards" :name="card.name" :id="card.id" @selectPro="routerPush(`/p/${card.id}`)"
+                @infoPro="" @changePro="" @deletePro="" />
             <div @click="formOpen()" class="add"><i class="fa-solid fa-plus"></i></div>
         </div>
     </article>
@@ -19,6 +22,7 @@
 import { ref } from 'vue';
 import { onMounted } from 'vue'
 import Card from '../components/Card.vue';
+import TopMenu from '../components/TopMenu.vue'
 
 import { useRouter } from 'vue-router';
 const router = useRouter();
@@ -74,18 +78,19 @@ function getProjects() {
         console.error('Error fetching resource:', error);
     });
 }
+
+
 </script>
 
 <style scoped lang="scss">
 .header {
     width: 100%;
-    height: 8%;
-    background-color: black;
+    height: 6%;
 }
 
 article {
     width: 100%;
-    height: 92%;
+    height: 94%;
     background: url('https://images.unsplash.com/photo-1533134486753-c833f0ed4866?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
     display: flex;
     justify-content: center;
