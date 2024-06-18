@@ -27,7 +27,8 @@ router.patch("/:boardid", authenticateToken, async (req, res) => {
             },
             data: {
                 name: req.body.name,
-                description: req.body.description
+                description: req.body.description,
+                color: req.body.color
             }
         });
         res.status(200).send()

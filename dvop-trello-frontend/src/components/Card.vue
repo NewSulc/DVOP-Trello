@@ -1,38 +1,88 @@
 <template>
     <div class="wrap">
-        <i @click="changePro()" class="fa-solid fa-pen"></i>
-        <i @click="deletePro()" class="fa-solid fa-trash"></i>
-        <div class="card" :style="{ backgroundColor: bgColor }" @click="selectPro()">
+        <i @click="boardForm = true" class="fa-solid fa-pen"></i>
+        <i @click="deleteBoard()" class="fa-solid fa-trash"></i>
+        <div class="card" :style="{ backgroundColor: color }" @click="router.push(`/b/${props.id}`)">
             <h1>{{ props.name }}</h1>
         </div>
+    </div>
+
+    <div class="form" v-if="boardForm">
+        <i class="fa-solid fa-xmark" @click="boardForm = false"></i>
+        <h2>{{ props.name }}</h2>
+        <hr>
+
+        <label for="newName">Name</label>
+        <input name="newName" v-model="bName" type="text" placeholder="Name">
+
+        <label for="newDesc">Description</label>
+        <input name="newDesc" v-model="bDesc" type="text" placeholder="Description" class="description">
+
+        <label for="newColor">Board color</label>
+        <input name="newColor" v-model="bColor" type="color">
+
+        <button @click="changeBoard()">Change Board</button>
     </div>
 </template>
 
 <script setup>
 import { ref } from 'vue';
-import { onMounted } from 'vue';
 
-const bgColor = ref('');
+const emit = defineEmits(["reloadBoard"])
 
 const props = defineProps({
     name: String,
-    id: Number
+    id: Number,
+    description: String,
+    color: String
 });
 
-onMounted(() => {
-    bgColor.value = '#' + Math.floor(Math.random() * 16777215).toString(16);
-});
+const boardForm = ref(false);
+const bName = ref(props.name);
+const bDesc = ref(props.description);
+const bColor = ref(props.color);
 
-const emit = defineEmits(["selectPro", "changePro", "deletePro"])
+import { useRouter } from 'vue-router';
+const router = useRouter();
 
-const selectPro = () => { emit("selectPro") }
-const changePro = () => { emit("changePro") }
-const deletePro = () => { emit("deletePro") }
+const changeBoard = () => {
+    fetch(`http://localhost:8080/board/${props.id}`, {
+        method: "PATCH",
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        },
+        body: JSON.stringify({
+            name: bName.value,
+            description: bDesc.value,
+            color: bColor.value
+        })
+    }).then(async (res) => {
+        boardForm.value = false;
+        emit('reloadBoard')
+    }).catch(error => {
+        console.error('Error fetching resource:', error);
+    });
+}
+
+function deleteBoard() {
+    fetch(`http://localhost:8080/board/${props.id}`, {
+        method: "DELETE",
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        }
+    }).then(async (res) => {
+        emit('reloadBoard')
+    }).catch(error => {
+        console.error('Error fetching resource:', error);
+    });
+}
 </script>
 
 <style scoped lang="scss">
 .wrap {
-    height: 7rem;
+    height: 8rem;
     aspect-ratio: 4/3;
     position: relative;
 
@@ -75,6 +125,74 @@ const deletePro = () => { emit("deletePro") }
 
         &:hover {
             font-size: 1.5rem;
+            transition: 0.25s;
+        }
+    }
+}
+
+.form {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 25%;
+    padding: 2rem 0;
+    background-color: white;
+    border-radius: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    >h2 {
+        font-size: 2.5rem;
+        font-weight: 900;
+    }
+
+    >hr {
+        width: 75%;
+        border: solid 1px black;
+    }
+
+    input {
+        width: 60%;
+        height: 2rem;
+    }
+
+    label {
+        margin-top: 1rem;
+    }
+
+    button {
+        width: 8rem;
+        height: 3rem;
+        margin-top: 1rem;
+        background-color: #42b7ee;
+        border-radius: 0.5rem;
+        transition: 0.25s;
+        border: none;
+        color: white;
+        font-size: 1rem;
+        transition: 0.25s;
+
+        &:hover {
+            transform: scale(0.9);
+            filter: brightness(0.5);
+            transition: 0.25s;
+        }
+    }
+
+    i {
+        position: absolute;
+        font-size: 1.5rem;
+        right: 1.5rem;
+        top: 1.5rem;
+        transition: 0.25s;
+
+        &:hover {
+            transform: scale(0.9);
+            filter: brightness(0.5);
             transition: 0.25s;
         }
     }

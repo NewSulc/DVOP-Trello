@@ -10,7 +10,7 @@
         </div>
     </article>
     <div class="form" v-if="formOn">
-        <h2>New Project</h2>
+        <h2>New Board</h2>
         <hr>
         <input v-model="newName" type="text" placeholder="Name">
         <input v-model="newDesc" type="text" placeholder="Description" class="description">
