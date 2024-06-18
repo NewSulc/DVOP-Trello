@@ -2,7 +2,6 @@
     <header>
         <div>
             <RouterLink id="logo" to="/">Trello</RouterLink>
-            <RouterLink to="/projects">Projects</RouterLink>
         </div>
         <div>
             <RouterLink to="/user">User</RouterLink>

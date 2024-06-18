@@ -14,7 +14,7 @@ router.get("/", authenticateToken, async (req, res) => {
             Project: true,
         },
     });
-
+    console.log(userProjects.map(userProject => userProject.Project))
     res.send(userProjects.map(userProject => userProject.Project))
 });
 
@@ -39,6 +39,7 @@ router.post("/:projectid/board", authenticateToken, async (req, res) => {
             data: {
                 name: req.body.name,
                 description: req.body.description,
+                color: req.body.color,
                 project_id: Number(req.params.projectid)
             }
         });

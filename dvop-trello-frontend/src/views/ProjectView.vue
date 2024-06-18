@@ -3,53 +3,62 @@
         <TopMenu />
     </div>
     <article>
-        <div class="wrap">
-            <Card v-for="(card, c) in cards" :name="card.name" :id="card.id" @selectPro="routerPush(`/p/${card.id}`)"
-                @changePro="changeForm(card)" @deletePro="deleteForm(card)" />
-            <div @click="formOpen()" class="add"><i class="fa-solid fa-plus"></i></div>
+        <div class="wrapper">
+            <Project v-for="(project, p) in projects" :name="project.name" :id="project.id" :description="project.description" @reloadProject="getProjects()"/>
         </div>
-        <Delete :class="{ inactive: !deleting }" :name="selectedProject.name" @reject="deleting = false"
-            @confirm="deleteProject()" />
-
-        <Change :class="{ inactive: !changing }" :name="selectedProject.name" :description="selectedProject.description" @reject="changing = false"
-            @confirm="changeProject" />
     </article>
-    <div class="form" v-if="formOn">
+    <div class="new" @click="() => { newProjectForm = true }">
+        <i class="fa-solid fa-plus"></i>
+    </div>
+    <div class="form" v-if="newProjectForm">
+        <i class="fa-solid fa-xmark" @click="() => { newProjectForm = false }"></i>
         <h2>New Project</h2>
         <hr>
-        <input v-model="newName" type="text" placeholder="Name">
-        <input v-model="newDesc" type="text" placeholder="Description" class="description">
+
+        <label for="newName">Name *</label>
+        <input name="newName" v-model="newName" type="text" placeholder="Name">
+
+        <label for="newDesc">Description</label>
+        <input name="newDesc" v-model="newDesc" type="text" placeholder="Description" class="description">
+
         <button @click="newProject">Create project</button>
     </div>
 </template>
 
 <script setup>
 import { ref } from 'vue';
-import { onMounted } from 'vue'
-import Card from '../components/Card.vue';
+import { onMounted } from 'vue';
 import TopMenu from '../components/TopMenu.vue';
-import Delete from '../components/forms/Delete.vue';
-import Change from '../components/forms/Change.vue';
+import Project from '../components/Project.vue';
 
-import { useRouter } from 'vue-router';
-const router = useRouter();
-
-function routerPush(val) { router.push(val) }
-
-const cards = ref([])
-
-const formOn = ref(false);
+const projects = ref();
+const newProjectForm = ref(false);
+const newName = ref("");
+const newDesc = ref("");
 
 onMounted(() => {
     getProjects();
 })
 
-function formOpen() { formOn.value = true }
-
-const newName = ref();
-const newDesc = ref("");
+function getProjects() {
+    fetch(`http://localhost:8080/project`, {
+        method: "GET",
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        }
+    }).then(async (res) => {
+        projects.value = await res.json()
+    }).catch(error => {
+        console.error('Error fetching resource:', error);
+    });
+}
 
 function newProject() {
+    if (newName.value == "") {
+        alert("Project must have a name");
+        return;
+    }
     fetch(`http://localhost:8080/project`, {
         method: "POST",
         headers: {
@@ -61,75 +70,14 @@ function newProject() {
             description: newDesc.value
         })
     }).then(async (res) => {
-        formOn.value = false;
+        newProjectForm.value = false;
+        newName.value = "";
+        newDesc.value = "";
         getProjects();
     }).catch(error => {
         console.error('Error fetching resource:', error);
     });
 }
-
-function getProjects() {
-    fetch(`http://localhost:8080/project`, {
-        method: "GET",
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-        }
-    }).then(async (res) => {
-        cards.value = await res.json()
-    }).catch(error => {
-        console.error('Error fetching resource:', error);
-    });
-}
-
-function changeForm(card) {
-    selectedProject.value = card;
-    changing.value = true;
-}
-
-const changeProject = (name, description) => {
-    fetch(`http://localhost:8080/project/${selectedProject.value.id}`, {
-        method: "PATCH",
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-        },
-        body: JSON.stringify({
-            name: name,
-            description: description
-        })
-    }).then(async (res) => {
-        changing.value = false;
-        getProjects();
-    }).catch(error => {
-        console.error('Error fetching resource:', error);
-    });
-}
-
-function deleteForm(card) {
-    selectedProject.value = card;
-    deleting.value = true;
-}
-
-function deleteProject() {
-    fetch(`http://localhost:8080/project/${selectedProject.value.id}`, {
-        method: "DELETE",
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-        }
-    }).then(async (res) => {
-        deleting.value = false;
-        getProjects();
-    }).catch(error => {
-        console.error('Error fetching resource:', error);
-    });
-}
-
-const deleting = ref(false);
-const changing = ref(false);
-
-const selectedProject = ref({ name: "", description: "" })
 </script>
 
 <style scoped lang="scss">
@@ -140,50 +88,54 @@ const selectedProject = ref({ name: "", description: "" })
 
 article {
     width: 100%;
-    height: 94%;
+    min-height: 94%;
     background: url('https://images.unsplash.com/photo-1533134486753-c833f0ed4866?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
     display: flex;
     justify-content: center;
     align-items: center;
 
-    >.wrap {
-        width: 75%;
-        height: 90%;
+    >.wrapper {
+        width: 50%;
+        min-height: 94%;
         display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 2rem;
-        flex-wrap: wrap;
+        flex-direction: column;
+        gap: 5rem;
+    }
+}
 
-        .add {
-            height: 7rem;
-            aspect-ratio: 4/3;
-            background-color: white;
-            font-size: 3rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: 0.25s;
+.new {
+    position: absolute;
+    height: 4rem;
+    aspect-ratio: 1;
+    background-color: #42b7ee;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+    border-radius: 50%;
+    right: 2rem;
+    bottom: 2rem;
+    transition: 0.25s;
 
-            &:active {
-                transform: scale(0.95);
-                transition: 0.25s;
-            }
-        }
+    &:hover {
+        transform: scale(0.9);
+        filter: brightness(0.5);
+        transition: 0.25s;
     }
 }
 
 .form {
     position: absolute;
     width: 25%;
-    height: 50%;
+    padding: 2rem 0;
     background-color: white;
     border-radius: 2rem;
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.5rem;
 
     >h2 {
         font-size: 2.5rem;
@@ -200,21 +152,41 @@ article {
         height: 2rem;
     }
 
+    label{
+        margin-top: 1rem;
+    }
+
     button {
-        width: 25%;
-        height: 2rem;
-        background: none;
+        margin-top: 1rem;
+        width: 8rem;
+        height: 3rem;
+        background-color: #42b7ee;
         border-radius: 0.5rem;
         transition: 0.25s;
+        border: none;
+        color: white;
+        font-size: 1rem;
+        transition: 0.25s;
 
-        &:active {
-            transform: scale(0.95);
+        &:hover {
+            transform: scale(0.9);
+            filter: brightness(0.5);
             transition: 0.25s;
         }
     }
-}
 
-.inactive {
-    display: none;
+    i {
+        position: absolute;
+        font-size: 1.5rem;
+        right: 1.5rem;
+        top: 1.5rem;
+        transition: 0.25s;
+
+        &:hover {
+            transform: scale(0.9);
+            filter: brightness(0.5);
+            transition: 0.25s;
+        }
+    }
 }
 </style>
