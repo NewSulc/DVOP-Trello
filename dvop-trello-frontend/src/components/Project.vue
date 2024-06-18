@@ -12,7 +12,7 @@
             <hr>
         </div>
         <div class="boards">
-            <Card v-for="(card, c) in cards" :name="card.name" :id="card.id" :color="card.color"
+            <Board v-for="(card, c) in cards" :name="card.name" :id="card.id" :color="card.color"
                 :description="card.description" @click="() => router.push(`/b/${card.id}`)"  @reloadBoard="getBoards()"/>
         </div>
     </div>
@@ -51,7 +51,7 @@
 <script setup>
 import { ref } from "vue";
 import { onMounted } from 'vue';
-import Card from "./Card.vue";
+import Board from "./Board.vue";
 
 const emit = defineEmits(["reloadProjects"])
 
