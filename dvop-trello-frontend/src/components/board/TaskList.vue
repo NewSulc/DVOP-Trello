@@ -1,8 +1,9 @@
 <template>
     <div class="list">
         <div class="head">{{ props.name }}</div>
+        <i class="fa-solid fa-trash" @click="deleteList()"></i>
         <ul>
-            <Task v-for="(task, t) in tasks" :name="task.name" :id="task.id" :listId="props.id" />
+            <Task v-for="(task, t) in tasks" :name="task.name" :id="task.id" :listId="props.id" @reloadList="getTasks()"/>
             <textarea v-if="addingTask" v-model="newTaskName"></textarea>
         </ul>
         <div class="hoverable" @click="addingTask = true" v-if="!addingTask">
@@ -19,8 +20,9 @@
 <script setup>
 import { ref } from 'vue';
 import { onMounted } from 'vue';
-import { useDataStore } from '@/stores/dataStore';
 import Task from '@/components/board/Task.vue';
+
+const emit = defineEmits(["reloadList"])
 
 const tasks = ref();
 
@@ -69,10 +71,25 @@ function postTask() {
         console.error('Error fetching resource:', error);
     });
 }
+
+function deleteList() {
+    fetch(`http://localhost:8080/list/${props.id}`, {
+        method: "DELETE",
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        }
+    }).then(async (res) => {
+        emit('reloadList')
+    }).catch(error => {
+        console.error('Error fetching resource:', error);
+    });
+}
 </script>
 
 <style scoped lang="scss">
 .list {
+    position: relative;
     width: 15rem;
     padding: 0.5rem;
     display: flex;
@@ -82,6 +99,20 @@ function postTask() {
     background-color: #101204;
 
     border-radius: 0.5rem;
+
+    >i {
+        position: absolute;
+        color: white;
+        top: 1rem;
+        right: 1rem;
+        transition: 0.25s;
+
+        &:hover {
+            transform: scale(0.9);
+            filter: brightness(0.5);
+            transition: 0.25s;
+        }
+    }
 
     >div {
         width: 14.5rem;

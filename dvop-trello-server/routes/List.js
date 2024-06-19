@@ -19,6 +19,20 @@ router.get("/:listId", authenticateToken, async (req, res) => {
     }
 });
 
+router.delete("/:listId", authenticateToken, async (req, res) => {
+    try {
+        await prisma.list.delete({
+            where:{
+                id: Number(req.params.listId)
+            }
+        })
+
+        res.send(200).send()
+    } catch {
+        res.status(500).send()
+    }
+});
+
 router.post("/:listId/task", authenticateToken, async (req, res) => {
     try {
         const lists = await prisma.task.create({

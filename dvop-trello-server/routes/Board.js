@@ -32,7 +32,7 @@ router.patch("/:boardid", authenticateToken, async (req, res) => {
             }
         });
         res.status(200).send()
-    } catch{
+    } catch {
         res.status(500).send()
     }
 });
@@ -50,53 +50,19 @@ router.delete("/:boardid", authenticateToken, async (req, res) => {
     }
 });
 
-router.post("/:boardid/list/:listid/task", (req, res) => {
-    if (boards[req.params.boardid] != null) {
-        if (boards[req.params.boardid].list[req.params.listid] != null) {
-            let newId = Math.floor(Math.random() * 9000000000) + 1000000000;
-
-            boards[req.params.boardid].list[req.params.listid].task[newId] = {
-                id: newId,
-                name: req.body.taskName
+router.post("/:boardid/list", async (req, res) => {
+    try {
+        await prisma.list.create({
+            data: {
+                name: req.body.name,
+                board_id: Number(req.params.boardid)
             }
-            res.status(201)
-            res.send(boards[req.params.boardid])
-        }
-        else {
-            res.status(404)
-            res.send("List not found")
-        }
-    }
-    else {
-        res.status(404)
-        res.send("Board not found")
-    }
-});
+        })
 
-router.patch("/:boardid/list/:listid/task/:taskid", (req, res) => {
-    if (boards[req.params.boardid] != null) {
-        if (boards[req.params.boardid].list[req.params.listid] != null) {
-            if (boards[req.params.boardid].list[req.params.listid].task[req.params.taskid] != null) {
-
-                boards[req.params.boardid].list[req.params.listid].task[req.params.taskid].name = req.body.taskName;
-
-                res.status(200)
-                res.send(boards[req.params.boardid])
-            }
-            else {
-                res.status(404)
-                res.send("Task not found")
-            }
-        }
-        else {
-            res.status(404)
-            res.send("List not found")
-        }
+        res.status(201).send()
+    } catch { 
+        res.status(500).send()
     }
-    else {
-        res.status(404)
-        res.send("Board not found")
-    }
-});
+})
 
 export default router;

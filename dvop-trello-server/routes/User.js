@@ -9,10 +9,6 @@ const router = express.Router();
 
 dotenv.config()
 
-router.get("/", async (req, res) => {
-    res.send(await prisma.user.findMany())
-})
-
 router.post("/", async (req, res) => {
     const users = await prisma.user.findMany()
     if (users.some(user => user.username === req.body.username)) return res.status(409).send("A user with this username already exists")
@@ -40,11 +36,28 @@ router.patch("/", authenticateToken, async (req, res) => {
                 username: req.body.newUsername,
             },
         });
-        res.status(201).send()
+        res.status(200).send()
     } catch {
         res.status(500).send()
     }
 });
+
+router.patch("/password", authenticateToken, async (req, res) => {
+    try {
+        const hashedPassword = await bcrypt.hash(req.body.password, 10);
+        await prisma.user.update({
+            where: {
+                id: req.user.id
+            },
+            data:{
+                password: hashedPassword
+            }
+        })
+        res.status(201).send()
+    } catch {
+        res.status(500).send()
+    }
+})
 
 router.post("/login", async (req, res) => {
     try {
@@ -54,6 +67,21 @@ router.post("/login", async (req, res) => {
         if (!await bcrypt.compare(req.body.password, user.password)) res.status(401).send('Wrong password')
         const accessToken = jwt.sign({ id: user.id }, process.env.ACCESS_TOKEN_SECRET)
         res.status(200).send({ accessToken: accessToken })
+    } catch {
+        res.status(500).send()
+    }
+});
+
+router.get("/", authenticateToken, async (req, res) => {
+    const userId = req.user.id;
+    try {
+        const user = await prisma.user.findUnique({
+            where: {
+                id: userId
+            }
+        })
+
+        res.status(200).send({ username: user.username, id: user.id })
     } catch {
         res.status(500).send()
     }

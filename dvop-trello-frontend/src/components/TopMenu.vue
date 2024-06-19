@@ -1,7 +1,7 @@
 <template>
     <header>
         <div>
-            <RouterLink id="logo" to="/">Trello</RouterLink>
+            <RouterLink id="logo" to="/projects">Trello</RouterLink>
         </div>
         <div>
             <RouterLink to="/logout" id="logout"><i class="fa-solid fa-right-from-bracket"></i></RouterLink>

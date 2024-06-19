@@ -2,10 +2,11 @@
     <text class="task" v-if="!editing" @click="editing = true">
         {{ props.name }}
         <i class="fa-solid fa-pen" @click="editedTask = props.name"></i>
+        <i class="fa-solid fa-trash" @click="deleteTask()"></i>
     </text>
     <textarea v-if="editing" v-model="editedTask"></textarea>
     <section class="add" v-if="editing">
-        <div class="send" @click="dataStore.updateTask(props.listId, props.id, editedTask), editing = false">Add card
+        <div class="send" @click="changeTask()">Add card
         </div>
         <i class="fa-solid fa-xmark cancel" @click="editing = false"></i>
     </section>
@@ -13,7 +14,6 @@
 
 <script setup>
 import { ref } from 'vue';
-import { useDataStore } from '@/stores/dataStore';
 
 const props = defineProps({
     name: String,
@@ -21,9 +21,46 @@ const props = defineProps({
     listId: Number
 });
 
+const emit = defineEmits(["reloadList"])
+
 const editing = ref(false);
 const editedTask = ref(props.name);
-const dataStore = useDataStore();
+
+function changeTask() {
+    if(editedTask.value == "") {
+        alert("Task must have a name")
+        return
+    }
+    fetch(`http://localhost:8080/task/${props.id}`, {
+        method: "PATCH",
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        },
+        body: JSON.stringify({
+            name: editedTask.value
+        })
+    }).then(async (res) => {
+        editing.value = false
+        emit("reloadList")
+    }).catch(error => {
+        console.error('Error fetching resource:', error);
+    });
+}
+
+function deleteTask() {
+    fetch(`http://localhost:8080/task/${props.id}`, {
+        method: "DELETE",
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        }
+    }).then(async (res) => {
+        emit("reloadList")
+    }).catch(error => {
+        console.error('Error fetching resource:', error);
+    });
+}
 </script>
 
 <style scoped lang="scss">
@@ -62,6 +99,10 @@ const dataStore = useDataStore();
         position: absolute;
         right: 1rem;
         font-size: 0.75rem;
+
+        &:first-child{
+            right: 3rem;
+        }
     }
 
     &:hover {
