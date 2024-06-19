@@ -6,6 +6,8 @@ import SignUpView from '@/views/SignUpView.vue'
 import SettingsView from '@/views/SettingsView.vue'
 import BoardView from '@/views/BoardView.vue'
 import ProjectView from '@/views/ProjectView.vue'
+import UserView from '@/views/UserView.vue'
+import Logout from '@/views/Logout.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -16,6 +18,8 @@ const router = createRouter({
     { path: '/settings', component: SettingsView },
     { path: '/b/:boardId', component: BoardView },
     { path: '/projects', component: ProjectView},
+    { path: '/user', component: UserView},
+    { path: '/logout', component: Logout},
   ]
 })
 
